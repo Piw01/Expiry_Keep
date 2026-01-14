@@ -49,8 +49,8 @@ class AuthWrapper extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user != null) {
-          // User sudah login, tampilkan home screen
-          return const HomeScreen();
+          // User sudah login, initialize categories and show home
+          return const home.HomeScreen();
         } else {
           // User belum login, tampilkan login screen
           return const LoginScreen();
@@ -66,52 +66,5 @@ class AuthWrapper extends ConsumerWidget {
   }
 }
 
-// Placeholder untuk home screen
-// Ganti dengan home screen aplikasi Expiry Keep Anda
-class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authService = ref.read(authServiceProvider);
-    final user = authService.currentUser;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Expiry Keep'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authService.signOut();
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.access_time_rounded,
-              size: 100,
-              color: Colors.deepPurple,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Selamat datang!',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              user?.email ?? '',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 32),
-            const Text('Home screen Expiry Keep ada di sini'),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// Import the real home screen
+import 'screens/home/home_screen.dart' as home;
