@@ -1,136 +1,352 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import '../providers/item_provider.dart';
-import '../widgets/add_item_sheet.dart';
-import '../widgets/item_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../providers/providers.dart';
+import '../../models/product_model.dart';
+import '../../services/auth_service.dart';
+import '../product/add_product_screen.dart';
+import '../product/product_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-  
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final itemsAsync = ref.watch(itemsProvider);
+    final productsAsync = ref.watch(productsProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final authService = ref.read(authServiceProvider);
 
-return Scaffold(
-      backgroundColor: const Color(0xFFF1F3F4), // Background abu terang ala Google
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("FreshKeep", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
+        elevation: 0,
         backgroundColor: Colors.white,
-        elevation: 0.5,
+        title: Row(
+          children: [
+            Icon(Icons.access_time_rounded, color: Colors.red[400]),
+            const SizedBox(width: 8),
+            const Text(
+              'Expiry Keep',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.grid_view, color: Colors.black54),
-            onPressed: () {}, // Nanti bisa buat fitur ganti layout
+            icon: const Icon(Icons.search, color: Colors.black87),
+            onPressed: () {
+              // TODO: Implement search
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.black87),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: const Text('Logout'),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          await authService.signOut();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
-      body: itemsAsync.when(
-        data: (items) => items.isEmpty 
-          ? const Center(child: Text("Belum ada barang di kulkas"))
-          : GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // 2 kolom ala Google Keep
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.9, // Mengatur tinggi kotak
-              ),
-              itemCount: items.length,
-              itemBuilder: (context, index) => ItemCard(item: items[index]),
-            ),
+      body: productsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
-      ),
-      
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        child: const Icon(Icons.add, color: Colors.blue, size: 32),
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-            builder: (context) => AddItemSheet(ref: ref),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text('Error: ${error.toString()}'),
+            ],
+          ),
+        ),
+        data: (products) {
+          if (products.isEmpty) {
+            return _buildEmptyState(context);
+          }
+
+          return categoriesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => const Center(child: Text('Error loading categories')),
+            data: (categories) {
+              // Create category map for quick lookup
+              final categoryMap = {
+                for (var cat in categories) cat.id: cat
+              };
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(productsProvider);
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    // Stats Section
+                    SliverToBoxAdapter(
+                      child: _buildStatsSection(ref),
+                    ),
+
+                    // Products Grid
+                    SliverPadding(
+                      padding: const EdgeInsets.all(8.0),
+                      sliver: SliverGrid(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.85,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final product = products[index];
+                            final category = categoryMap[product.categoryId];
+                            return _buildProductCard(context, ref, product, category);
+                          },
+                          childCount: products.length,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddProductScreen(),
+            ),
+          ).then((_) => ref.invalidate(productsProvider));
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Add Product'),
+        backgroundColor: Colors.red[400],
       ),
     );
   }
 
-  void _openAddSheet(BuildContext context, WidgetRef ref) {
-  final nameController = TextEditingController();
-  DateTime selectedDate = DateTime.now().add(const Duration(days: 7));
-  String selectedCategory = 'Makanan';
-  // Daftar warna soft ala Google Keep
-  int selectedColor = 0xFFFFFFFF; // Putih
-
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-    builder: (ctx) => Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 20, right: 20, top: 20),
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text("Tambah Barang Baru", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 15),
-          TextField(
-            controller: nameController,
-            decoration: const InputDecoration(hintText: "Nama Barang (Susu, Daging, dll)", border: InputBorder.none),
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 120,
+            color: Colors.grey[300],
           ),
-          const Divider(),
-          // Pilih Kategori & Tanggal
-          Row(
-            children: [
-              ActionChip(
-                label: const Text("Pilih Tanggal"),
-                avatar: const Icon(Icons.calendar_month, size: 16),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2030),
-                  );
-                  if (picked != null) selectedDate = picked;
-                },
-              ),
-              const SizedBox(width: 10),
-              // Dropdown Kategori Sederhana
-              DropdownButton<String>(
-                value: selectedCategory,
-                items: <String>['Makanan', 'Minuman', 'Obat', 'Lainnya'].map((String value) {
-                  return DropdownMenuItem<String>(value: value, child: Text(value));
-                }).toList(),
-                onChanged: (val) => selectedCategory = val!,
+          const SizedBox(height: 24),
+          Text(
+            'No products yet',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap + to add your first product',
+            style: TextStyle(color: Colors.grey[500]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsSection(WidgetRef ref) {
+    final statsAsync = ref.watch(statsProvider);
+
+    return statsAsync.when(
+      loading: () => const SizedBox(),
+      error: (error, stack) => const SizedBox(),
+      data: (stats) {
+        return Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Tombol Simpan
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-              onPressed: () {
-                if (nameController.text.isNotEmpty) {
-                  // Panggil fungsi addItem dari provider
-                  addItem(ref, nameController.text, selectedDate, selectedCategory, selectedColor);
-                  Navigator.pop(ctx);
-                }
-              },
-              child: const Text("Simpan ke Kulkas"),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem('Fresh', stats['fresh']!, Colors.green),
+              _buildStatItem('Expiring', stats['expiring_soon']!, Colors.orange),
+              _buildStatItem('Expired', stats['expired']!, Colors.red),
+            ],
           ),
-          const SizedBox(height: 20),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStatItem(String label, int count, Color color) {
+    return Column(
+      children: [
+        Text(
+          count.toString(),
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductCard(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+    category,
+  ) {
+    final daysLeft = product.daysUntilExpiry;
+    Color statusColor;
+    String statusText;
+
+    if (product.isExpired) {
+      statusColor = Colors.red;
+      statusText = 'Expired';
+    } else if (product.isExpiringSoon) {
+      statusColor = Colors.orange;
+      statusText = '$daysLeft days left';
+    } else {
+      statusColor = Colors.green;
+      statusText = '$daysLeft days left';
+    }
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: product),
+          ),
+        ).then((_) => ref.invalidate(productsProvider));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: product.isExpired
+                ? Colors.red.withOpacity(0.3)
+                : Colors.grey.withOpacity(0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Category icon and name
+              Row(
+                children: [
+                  Text(
+                    category?.icon ?? '📦',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      category?.name ?? 'Unknown',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Product name
+              Text(
+                product.name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const Spacer(),
+
+              // Expiry date
+              Text(
+                DateFormat('MMM dd, yyyy').format(product.expiryDate),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Status
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
+    );
   }
 }
