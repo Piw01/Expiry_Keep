@@ -6,8 +6,6 @@ import 'package:note_app/screens/product/product_detail_screen.dart';
 import '../../../providers/providers.dart';
 import '../../../models/product_model.dart';
 import '../../../services/auth_service.dart';
-import '../../product/add_product_screen.dart';
-import '../../product/product_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
