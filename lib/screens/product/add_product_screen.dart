@@ -54,7 +54,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
+        const SnackBar(
+          content: Text('Please select a category'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
@@ -72,6 +75,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       );
 
       if (mounted) {
+        // Invalidate products to refresh the list
+        ref.invalidate(productsProvider);
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Product added successfully!'),
@@ -124,7 +130,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   )
                 : const Text(
                     'SAVE',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
           ),
         ],
@@ -191,20 +200,42 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   ),
                   const SizedBox(height: 12),
                   categoriesAsync.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (error, stack) => Text('Error: $error'),
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    error: (error, stack) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Error loading categories: ${error.toString()}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
                     data: (categories) {
+                      if (categories.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'No categories available. Please contact support.',
+                            style: TextStyle(color: Colors.orange),
+                          ),
+                        );
+                      }
+
                       return Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: categories.map((category) {
                           final isSelected = _selectedCategoryId == category.id;
-                          return GestureDetector(
+                          return InkWell(
                             onTap: () {
                               setState(() {
                                 _selectedCategoryId = category.id;
                               });
                             },
+                            borderRadius: BorderRadius.circular(20),
                             child: _buildCategoryChip(category, isSelected),
                           );
                         }).toList(),
@@ -292,11 +323,15 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        _remindBeforeDays == 0
-                            ? 'Off'
-                            : '$_remindBeforeDays day${_remindBeforeDays > 1 ? 's' : ''}',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      SizedBox(
+                        width: 80,
+                        child: Text(
+                          _remindBeforeDays == 0
+                              ? 'Off'
+                              : '$_remindBeforeDays day${_remindBeforeDays > 1 ? 's' : ''}',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          textAlign: TextAlign.end,
+                        ),
                       ),
                     ],
                   ),
@@ -311,26 +346,30 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   Widget _buildCategoryChip(Category category, bool isSelected) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: isSelected
             ? Color(int.parse('FF${category.color}', radix: 16))
             : Colors.grey[100],
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isSelected ? Colors.transparent : Colors.grey[300]!,
+          color: isSelected 
+              ? Color(int.parse('FF${category.color}', radix: 16))
+              : Colors.grey[300]!,
+          width: 1.5,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(category.icon, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 6),
+          Text(category.icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 8),
           Text(
             category.name,
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.black87,
-              fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              fontSize: 14,
             ),
           ),
         ],
@@ -341,27 +380,32 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   Widget _buildDateField(String label, DateTime date, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16),
-          ),
-          Row(
-            children: [
-              Text(
-                DateFormat('MMM dd, yyyy').format(date),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(fontSize: 16),
+            ),
+            Row(
+              children: [
+                Text(
+                  DateFormat('MMM dd, yyyy').format(date),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.calendar_today, size: 20),
-            ],
-          ),
-        ],
+                const SizedBox(width: 8),
+                const Icon(Icons.calendar_today, size: 20, color: Colors.blue),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
