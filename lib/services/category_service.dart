@@ -24,7 +24,7 @@ class CategoryService {
     }
   }
 
-  // Initialize default categories for new user
+  // Initialize default categories for new user - FIXED VERSION
   Future<void> initializeDefaultCategories() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -34,17 +34,14 @@ class CategoryService {
       final existing = await getCategories();
       if (existing.isNotEmpty) return;
 
-      // Insert default categories
-      final categories = DefaultCategories.categories.map((cat) => {
-            'user_id': userId,
-            'name': cat['name'],
-            'icon': cat['icon'],
-            'color': cat['color'],
-            'is_default': true,
-          }).toList();
-
-      await _supabase.from('categories').insert(categories);
+      // Call the database function to initialize categories
+      await _supabase.rpc('initialize_default_categories', params: {
+        'p_user_id': userId,
+      });
+      
+      print('Default categories initialized for user: $userId');
     } catch (e) {
+      print('Error initializing categories: $e');
       rethrow;
     }
   }
