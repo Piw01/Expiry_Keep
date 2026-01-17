@@ -5,7 +5,6 @@ import 'package:note_app/screens/product/add_product_screen.dart';
 import 'package:note_app/screens/product/product_detail_screen.dart';
 import '../../../providers/providers.dart';
 import '../../../models/product_model.dart';
-import '../../../services/auth_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -14,7 +13,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final productsAsync = ref.watch(productsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
-    final authService = ref.read(authServiceProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -41,29 +39,6 @@ class HomeScreen extends ConsumerWidget {
               // TODO: Implement search
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.black87),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (context) => SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.logout),
-                        title: const Text('Logout'),
-                        onTap: () async {
-                          Navigator.pop(context);
-                          await authService.signOut();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
         ],
       ),
       body: productsAsync.when(
@@ -87,7 +62,6 @@ class HomeScreen extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => const Center(child: Text('Error loading categories')),
             data: (categories) {
-              // Create category map for quick lookup
               final categoryMap = {
                 for (var cat in categories) cat.id: cat
               };
@@ -98,12 +72,9 @@ class HomeScreen extends ConsumerWidget {
                 },
                 child: CustomScrollView(
                   slivers: [
-                    // Stats Section
                     SliverToBoxAdapter(
                       child: _buildStatsSection(ref),
                     ),
-
-                    // Products Grid
                     SliverPadding(
                       padding: const EdgeInsets.all(8.0),
                       sliver: SliverGrid(
@@ -283,7 +254,6 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category icon and name
               Row(
                 children: [
                   Text(
@@ -304,8 +274,6 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
-
-              // Product name
               Text(
                 product.name,
                 style: const TextStyle(
@@ -316,8 +284,6 @@ class HomeScreen extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
-
-              // Expiry date
               Text(
                 DateFormat('MMM dd, yyyy').format(product.expiryDate),
                 style: TextStyle(
@@ -326,8 +292,6 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Status
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

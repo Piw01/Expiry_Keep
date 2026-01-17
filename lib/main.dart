@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
+import 'screens/splash/splash_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/home/home_screen.dart';
+import 'screens/home/main_navigation_screen.dart';
 import 'services/auth_service.dart';
 import 'services/category_service.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,25 +31,46 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(darkModeProvider);
+
     return MaterialApp(
       title: 'Expiry Keep',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.red,
+          brightness: Brightness.light,
+        ),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          centerTitle: false,
+          elevation: 0,
+        ),
       ),
-      // Add routes configuration
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.red,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          centerTitle: false,
+          elevation: 0,
+        ),
+      ),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routes: {
-        '/': (context) => const AuthWrapper(),
-        '/home': (context) => const HomeScreen(),
+        '/': (context) => const SplashScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/auth-wrapper': (context) => const AuthWrapper(),
         '/login': (context) => const LoginScreen(),
+        '/home': (context) => const MainNavigationScreen(),
       },
       initialRoute: '/',
     );
   }
 }
 
-// Widget untuk cek status auth
 class AuthWrapper extends ConsumerStatefulWidget {
   const AuthWrapper({super.key});
 
@@ -56,17 +80,29 @@ class AuthWrapper extends ConsumerStatefulWidget {
 
 class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   bool _isInitializing = true;
+  bool _hasSeenOnboarding = false;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    // TODO: Check if user has seen onboarding from SharedPreferences
+    // For now, always show onboarding for first time
+    setState(() {
+      _hasSeenOnboarding = false; // Change to true after first launch
+    });
+    
+    await _initializeApp();
   }
 
   Future<void> _initializeApp() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
+      
       if (user != null) {
         print('User logged in: ${user.id}');
         
@@ -78,10 +114,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         
         if (categories.isEmpty) {
           print('No categories found, initializing...');
-          // Initialize default categories
           await categoryService.initializeDefaultCategories();
           
-          // Verify categories were created
           final newCategories = await categoryService.getCategories();
           print('Categories created: ${newCategories.length}');
           
@@ -104,6 +138,11 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         setState(() {
           _isInitializing = false;
         });
+        
+        // Navigate to onboarding if not seen
+        if (!_hasSeenOnboarding) {
+          Navigator.of(context).pushReplacementNamed('/onboarding');
+        }
       }
     }
   }
@@ -170,10 +209,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     return authState.when(
       data: (user) {
         if (user != null) {
-          // User sudah login, show home
-          return const HomeScreen();
+          return const MainNavigationScreen();
         } else {
-          // User belum login, tampilkan login screen
           return const LoginScreen();
         }
       },
