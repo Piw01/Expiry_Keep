@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'config/supabase_config.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -80,27 +81,29 @@ class AuthWrapper extends ConsumerStatefulWidget {
 
 class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   bool _isInitializing = true;
-  bool _hasSeenOnboarding = false;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _checkOnboarding();
-  }
-
-  Future<void> _checkOnboarding() async {
-    // TODO: Check if user has seen onboarding from SharedPreferences
-    // For now, always show onboarding for first time
-    setState(() {
-      _hasSeenOnboarding = false; // Change to true after first launch
-    });
-    
-    await _initializeApp();
+    _initializeApp();
   }
 
   Future<void> _initializeApp() async {
     try {
+      // Check if user has seen onboarding
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+      
+      if (!hasSeenOnboarding) {
+        // First time user - show onboarding
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/onboarding');
+        }
+        return;
+      }
+
+      // Check if user is logged in
       final user = Supabase.instance.client.auth.currentUser;
       
       if (user != null) {
@@ -123,27 +126,24 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
             setState(() {
               _errorMessage = 'Failed to initialize categories. Please contact support.';
             });
+            return;
           }
         } else {
           print('Categories already exist: ${categories.length}');
         }
       }
+      
+      // Navigation will be handled by auth state listener
+      setState(() {
+        _isInitializing = false;
+      });
+      
     } catch (e) {
       print('Error initializing app: $e');
       setState(() {
         _errorMessage = 'Initialization error: ${e.toString()}';
+        _isInitializing = false;
       });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-        });
-        
-        // Navigate to onboarding if not seen
-        if (!_hasSeenOnboarding) {
-          Navigator.of(context).pushReplacementNamed('/onboarding');
-        }
-      }
     }
   }
 
