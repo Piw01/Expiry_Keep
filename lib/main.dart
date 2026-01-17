@@ -72,7 +72,10 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         await categoryService.initializeDefaultCategories();
       }
     } catch (e) {
-      print('Error initializing categories: $e');
+      print('Error initializing app: $e');
+      setState(() {
+        _errorMessage = 'Initialization error: ${e.toString()}';
+      });
     } finally {
       if (mounted) {
         setState(() {
