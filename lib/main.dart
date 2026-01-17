@@ -32,7 +32,7 @@ class MyApp extends ConsumerWidget {
       title: 'Expiry Keep',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
       ),
       // Add routes configuration
@@ -56,20 +56,43 @@ class AuthWrapper extends ConsumerStatefulWidget {
 
 class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   bool _isInitializing = true;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _initializeCategories();
+    _initializeApp();
   }
 
-  Future<void> _initializeCategories() async {
+  Future<void> _initializeApp() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
-        // Initialize default categories for new users
+        print('User logged in: ${user.id}');
+        
+        // Initialize categories
         final categoryService = CategoryService(Supabase.instance.client);
-        await categoryService.initializeDefaultCategories();
+        
+        // Try to get existing categories
+        final categories = await categoryService.getCategories();
+        
+        if (categories.isEmpty) {
+          print('No categories found, initializing...');
+          // Initialize default categories
+          await categoryService.initializeDefaultCategories();
+          
+          // Verify categories were created
+          final newCategories = await categoryService.getCategories();
+          print('Categories created: ${newCategories.length}');
+          
+          if (newCategories.isEmpty) {
+            setState(() {
+              _errorMessage = 'Failed to initialize categories. Please contact support.';
+            });
+          }
+        } else {
+          print('Categories already exist: ${categories.length}');
+        }
       }
     } catch (e) {
       print('Error initializing app: $e');
@@ -88,9 +111,56 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_isInitializing) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Initializing app...',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage.isNotEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isInitializing = true;
+                      _errorMessage = '';
+                    });
+                    _initializeApp();
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
