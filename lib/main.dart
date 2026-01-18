@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +20,18 @@ void main() async {
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
+
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message?.contains('ScheduleMicrotask') != true) {
+      debugPrintSynchronously(message, wrapWidth: wrapWidth);
+    }
+  };
+
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+  );
+
 
   runApp(
     const ProviderScope(
