@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_service.dart';
-import 'register_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -25,25 +24,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    print('=== LOGIN STARTED ===');
+    print('Email: ${_emailController.text}');
+    
+    if (!_formKey.currentState!.validate()) {
+      print('Form validation failed');
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
+      print('Attempting to sign in...');
       final authService = ref.read(authServiceProvider);
-      await authService.signIn(
+      final response = await authService.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      
+      print('Sign in response: ${response.user?.id}');
+      print('Sign in successful!');
 
       // AuthWrapper will automatically detect the user and redirect
       // No need to manually navigate
     } catch (e) {
+      print('=== LOGIN ERROR ===');
+      print('Error type: ${e.runtimeType}');
+      print('Error message: $e');
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Login gagal: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -178,16 +192,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Text('Belum punya akun? '),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const RegisterScreen(),
-                            ),
-                          );
+                          Navigator.of(context).pushNamed('/register');
                         },
                         child: const Text('Daftar'),
                       ),
                     ],
                   ),
+                  
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacementNamed('/home');
+                    },
+                    child: const Text('Skip Login (Debug Only)'),
+                  ),
+
                 ],
               ),
             ),

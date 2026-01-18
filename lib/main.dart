@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,6 +6,7 @@ import 'config/supabase_config.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
 import 'screens/home/main_navigation_screen.dart';
 import 'services/auth_service.dart';
 import 'services/category_service.dart';
@@ -20,18 +20,6 @@ void main() async {
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
-
-  debugPrint = (String? message, {int? wrapWidth}) {
-    if (message?.contains('ScheduleMicrotask') != true) {
-      debugPrintSynchronously(message, wrapWidth: wrapWidth);
-    }
-  };
-
-  await Supabase.initialize(
-    url: SupabaseConfig.supabaseUrl,
-    anonKey: SupabaseConfig.supabaseAnonKey,
-  );
-
 
   runApp(
     const ProviderScope(
@@ -78,6 +66,7 @@ class MyApp extends ConsumerWidget {
         '/onboarding': (context) => const OnboardingScreen(),
         '/auth-wrapper': (context) => const AuthWrapper(),
         '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/home': (context) => const MainNavigationScreen(),
       },
       initialRoute: '/',
