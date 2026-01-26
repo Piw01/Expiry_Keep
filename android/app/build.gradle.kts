@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.note_app"
+    namespace = "com.example.Expiry_Keep"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
