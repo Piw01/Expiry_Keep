@@ -14,19 +14,22 @@ class HomeScreen extends ConsumerWidget {
     final productsAsync = ref.watch(productsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
 
+    // PERBAIKAN: Dapatkan warna dari Theme
+    final backgroundColor = Theme.of(context).colorScheme.surface;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: Row(
           children: [
             Icon(Icons.access_time_rounded, color: Colors.red[400]),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Expiry Keep',
               style: TextStyle(
-                color: Colors.black87,
+                color: textColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -34,7 +37,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.black87),
+            icon: Icon(Icons.search, color: textColor),
             onPressed: () {
               // TODO: Implement search
             },
@@ -73,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
                 child: CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
-                      child: _buildStatsSection(ref),
+                      child: _buildStatsSection(context, ref),
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.all(8.0),
@@ -118,6 +121,9 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final subtitleColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -125,27 +131,28 @@ class HomeScreen extends ConsumerWidget {
           Icon(
             Icons.inventory_2_outlined,
             size: 120,
-            color: Colors.grey[300],
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
           ),
           const SizedBox(height: 24),
           Text(
             'No products yet',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey[600],
+                  color: textColor.withOpacity(0.6),
                 ),
           ),
           const SizedBox(height: 8),
           Text(
             'Tap + to add your first product',
-            style: TextStyle(color: Colors.grey[500]),
+            style: TextStyle(color: subtitleColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatsSection(WidgetRef ref) {
+  Widget _buildStatsSection(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(statsProvider);
+    final cardColor = Theme.of(context).cardColor;
 
     return statsAsync.when(
       loading: () => const SizedBox(),
@@ -155,7 +162,7 @@ class HomeScreen extends ConsumerWidget {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -168,9 +175,9 @@ class HomeScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Fresh', stats['fresh']!, Colors.green),
-              _buildStatItem('Expiring', stats['expiring_soon']!, Colors.orange),
-              _buildStatItem('Expired', stats['expired']!, Colors.red),
+              _buildStatItem(context, 'Fresh', stats['fresh']!, Colors.green),
+              _buildStatItem(context, 'Expiring', stats['expiring_soon']!, Colors.orange),
+              _buildStatItem(context, 'Expired', stats['expired']!, Colors.red),
             ],
           ),
         );
@@ -178,7 +185,9 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatItem(String label, int count, Color color) {
+  Widget _buildStatItem(BuildContext context, String label, int count, Color color) {
+    final subtitleColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
     return Column(
       children: [
         Text(
@@ -194,7 +203,7 @@ class HomeScreen extends ConsumerWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[600],
+            color: subtitleColor,
           ),
         ),
       ],
@@ -222,6 +231,11 @@ class HomeScreen extends ConsumerWidget {
       statusText = '$daysLeft days left';
     }
 
+    final cardColor = Theme.of(context).cardColor;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final subtitleColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final borderColor = Theme.of(context).colorScheme.outline.withOpacity(0.2);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -233,12 +247,12 @@ class HomeScreen extends ConsumerWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: product.isExpired
                 ? Colors.red.withOpacity(0.3)
-                : Colors.grey.withOpacity(0.2),
+                : borderColor,
             width: 1,
           ),
           boxShadow: [
@@ -266,7 +280,7 @@ class HomeScreen extends ConsumerWidget {
                       category?.name ?? 'Unknown',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: subtitleColor,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -276,9 +290,10 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               Text(
                 product.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: textColor,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -288,7 +303,7 @@ class HomeScreen extends ConsumerWidget {
                 DateFormat('MMM dd, yyyy').format(product.expiryDate),
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: subtitleColor,
                 ),
               ),
               const SizedBox(height: 8),

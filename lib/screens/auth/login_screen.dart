@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_service.dart';
+import '../../services/category_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -45,8 +47,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       print('Sign in response: ${response.user?.id}');
       print('Sign in successful!');
 
-      // AuthWrapper will automatically detect the user and redirect
-      // No need to manually navigate
+      if (mounted && response.user != null) {
+        // Initialize categories for user if needed
+        try {
+          final categoryService = CategoryService(Supabase.instance.client);
+          final categories = await categoryService.getCategories();
+          
+          if (categories.isEmpty) {
+            print('No categories found, initializing...');
+            await categoryService.initializeDefaultCategories();
+          }
+        } catch (e) {
+          print('Error initializing categories: $e');
+          // Continue anyway, categories will be created later
+        }
+
+        // PERBAIKAN: Navigate langsung ke home setelah login berhasil
+        if (mounted) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false, // Remove all previous routes
+          );
+        }
+      }
     } catch (e) {
       print('=== LOGIN ERROR ===');
       print('Error type: ${e.runtimeType}');
@@ -198,14 +221,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                   ),
-                  
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacementNamed('/home');
-                    },
-                    child: const Text('Skip Login (Debug Only)'),
-                  ),
-
                 ],
               ),
             ),

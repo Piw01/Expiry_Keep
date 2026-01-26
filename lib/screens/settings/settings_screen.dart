@@ -12,18 +12,23 @@ class SettingsScreen extends ConsumerWidget {
     final currentUser = authService.currentUser;
     final isDarkMode = ref.watch(darkModeProvider);
 
+    // PERBAIKAN: Gunakan Theme colors
+    final backgroundColor = Theme.of(context).colorScheme.surface;
+    final cardColor = Theme.of(context).cardColor;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final subtitleColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: Row(
           children: [
             Icon(Icons.settings, color: Colors.red[400]),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Settings',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: textColor),
             ),
           ],
         ),
@@ -35,7 +40,7 @@ class SettingsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -66,9 +71,10 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       Text(
                         currentUser?.userMetadata?['full_name'] ?? 'User',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: textColor,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -76,7 +82,7 @@ class SettingsScreen extends ConsumerWidget {
                         currentUser?.email ?? '',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: subtitleColor,
                         ),
                       ),
                     ],
@@ -89,18 +95,19 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           
           // Appearance Section
-          const Text(
+          Text(
             'Appearance',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 12),
           
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -113,6 +120,7 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _buildSwitchTile(
+                  context: context,
                   icon: Icons.dark_mode_outlined,
                   title: 'Dark Mode',
                   subtitle: 'Enable dark theme',
@@ -128,18 +136,19 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           
           // Notifications Section
-          const Text(
+          Text(
             'Notifications',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 12),
           
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -152,6 +161,7 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _buildSwitchTile(
+                  context: context,
                   icon: Icons.notifications_outlined,
                   title: 'Push Notifications',
                   subtitle: 'Get notified about expiring products',
@@ -160,8 +170,9 @@ class SettingsScreen extends ConsumerWidget {
                     // TODO: Implement notification toggle
                   },
                 ),
-                const Divider(height: 1),
+                Divider(height: 1, color: subtitleColor.withOpacity(0.2)),
                 _buildSwitchTile(
+                  context: context,
                   icon: Icons.alarm_outlined,
                   title: 'Daily Reminder',
                   subtitle: 'Daily summary at 9:00 AM',
@@ -177,18 +188,19 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           
           // About Section
-          const Text(
+          Text(
             'About',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 12),
           
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -201,22 +213,25 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _buildTile(
+                  context: context,
                   icon: Icons.info_outline,
                   title: 'About Expiry Keep',
                   onTap: () {
                     _showAboutDialog(context);
                   },
                 ),
-                const Divider(height: 1),
+                Divider(height: 1, color: subtitleColor.withOpacity(0.2)),
                 _buildTile(
+                  context: context,
                   icon: Icons.privacy_tip_outlined,
                   title: 'Privacy Policy',
                   onTap: () {
                     // TODO: Show privacy policy
                   },
                 ),
-                const Divider(height: 1),
+                Divider(height: 1, color: subtitleColor.withOpacity(0.2)),
                 _buildTile(
+                  context: context,
                   icon: Icons.description_outlined,
                   title: 'Terms of Service',
                   onTap: () {
@@ -256,6 +271,12 @@ class SettingsScreen extends ConsumerWidget {
 
                 if (confirm == true) {
                   await authService.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/login',
+                      (route) => false,
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -283,7 +304,7 @@ class SettingsScreen extends ConsumerWidget {
               'Version 1.0.0',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[500],
+                color: subtitleColor,
               ),
             ),
           ),
@@ -295,13 +316,16 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     String? subtitle,
     VoidCallback? onTap,
   }) {
+    final iconColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    
     return ListTile(
-      leading: Icon(icon, color: Colors.grey[700]),
+      leading: Icon(icon, color: iconColor),
       title: Text(title),
       subtitle: subtitle != null ? Text(subtitle) : null,
       trailing: const Icon(Icons.chevron_right),
@@ -310,14 +334,17 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildSwitchTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     String? subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
+    final iconColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    
     return ListTile(
-      leading: Icon(icon, color: Colors.grey[700]),
+      leading: Icon(icon, color: iconColor),
       title: Text(title),
       subtitle: subtitle != null ? Text(subtitle) : null,
       trailing: Switch(
