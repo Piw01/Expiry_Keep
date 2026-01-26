@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import './home_screen.dart';
 import '../calendar/calendar_screen.dart';
-import '../statistics/statistics_screen.dart';
 import '../settings/settings_screen.dart';
 
 // Provider untuk current tab index
@@ -18,7 +17,6 @@ class MainNavigationScreen extends ConsumerWidget {
     final List<Widget> screens = [
       const HomeScreen(),
       const CalendarScreen(),
-      const StatisticsScreen(),
       const SettingsScreen(),
     ];
 
@@ -57,11 +55,6 @@ class MainNavigationScreen extends ConsumerWidget {
               icon: Icon(Icons.calendar_today_outlined),
               activeIcon: Icon(Icons.calendar_today),
               label: 'Calendar',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_outlined),
-              activeIcon: Icon(Icons.bar_chart),
-              label: 'Statistics',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
