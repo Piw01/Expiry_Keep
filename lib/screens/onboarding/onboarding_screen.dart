@@ -16,19 +16,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingPage(
       icon: Icons.inventory_2_outlined,
       title: 'Track Your Products',
-      description: 'Keep track of all your groceries, medicines, and documents in one place.',
+      description: 'Pantau semua bahan makanan, obat-obatan, dan dokumen Anda di satu tempat.',
       color: Colors.blue,
     ),
     OnboardingPage(
       icon: Icons.notifications_active_outlined,
       title: 'Get Reminders',
-      description: 'Never let food go to waste! Get notified before products expire.',
+      description: 'Jangan biarkan makanan terbuang sia-sia! Dapatkan pemberitahuan sebelum produk kedaluwarsa.',
       color: Colors.orange,
     ),
     OnboardingPage(
       icon: Icons.trending_up_outlined,
       title: 'Stay Organized',
-      description: 'View statistics and manage your products efficiently.',
+      description: 'Lihat statistik dan kelola produk Anda secara efisien.',
       color: Colors.green,
     ),
   ];

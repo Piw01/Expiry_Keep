@@ -42,7 +42,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Future<void> _handleUpdate() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product name cannot be empty')),
+        const SnackBar(content: Text('Nama produk tidak boleh kosong')),
       );
       return;
     }
@@ -62,7 +62,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Product updated successfully!'),
+            content: Text('Produk berhasil diperbarui!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -89,17 +89,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: const Text('Are you sure you want to delete this product?'),
+        title: const Text('Hapus Produk'),
+        content: const Text('Apakah Anda yakin ingin menghapus produk ini?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Batalkan'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -116,7 +116,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Product deleted successfully!'),
+            content: Text('Produk berhasil dihapus!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -174,7 +174,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Product Details',
+          'Detail Produk',
           style: TextStyle(color: Colors.black87),
         ),
         actions: [
@@ -198,7 +198,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text(
-                      'SAVE',
+                      'SIMPAN',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
             ),
@@ -225,7 +225,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 ? TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
-                      labelText: 'Product Name',
+                      labelText: 'Nama Produk',
                       border: InputBorder.none,
                     ),
                   )
@@ -233,7 +233,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Product Name',
+                        'Nama Produk',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -310,13 +310,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             child: Column(
               children: [
                 _buildDateRow(
-                  'Manufactured',
+                  'Diproduksi',
                   _manufacturedDate,
                   _isEditing ? () => _selectDate(context, true) : null,
                 ),
                 const Divider(height: 24),
                 _buildDateRow(
-                  'Expiry',
+                  'Kadaluwarsa',
                   _expiryDate,
                   _isEditing ? () => _selectDate(context, false) : null,
                 ),
@@ -367,10 +367,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     const SizedBox(width: 8),
                     Text(
                       widget.product.isExpired
-                          ? 'Expired'
+                          ? 'Kadaluwarsa'
                           : widget.product.isExpiringSoon
-                              ? 'Expiring Soon (${widget.product.daysUntilExpiry} days)'
-                              : 'Fresh (${widget.product.daysUntilExpiry} days left)',
+                              ? 'Akan segera kedaluwarsa (${widget.product.daysUntilExpiry} Hari lagi)'
+                              : 'Fresh (${widget.product.daysUntilExpiry} Hari lagi)',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -402,7 +402,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Remind me before',
+                    'Ingatkan saya sebelum',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -418,8 +418,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           max: 7,
                           divisions: 7,
                           label: _remindBeforeDays == 0
-                              ? 'No reminder'
-                              : '$_remindBeforeDays day${_remindBeforeDays > 1 ? 's' : ''}',
+                              ? 'Tidak ada pengingat'
+                              : '$_remindBeforeDays Hari${_remindBeforeDays > 1 ? 's' : ''}',
                           onChanged: (value) {
                             setState(() {
                               _remindBeforeDays = value.toInt();
@@ -431,7 +431,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       Text(
                         _remindBeforeDays == 0
                             ? 'Off'
-                            : '$_remindBeforeDays day${_remindBeforeDays > 1 ? 's' : ''}',
+                            : '$_remindBeforeDays Hari${_remindBeforeDays > 1 ? 's' : ''}',
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ],

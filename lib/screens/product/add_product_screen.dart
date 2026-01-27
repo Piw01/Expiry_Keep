@@ -55,7 +55,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select a category'),
+          content: Text('Silakan pilih kategori'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -80,7 +80,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Product added successfully!'),
+            content: Text('Produk berhasil ditambahkan!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -116,7 +116,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Add Product',
+          'Tambah Produk',
           style: TextStyle(color: Colors.black87),
         ),
         actions: [
@@ -129,7 +129,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Text(
-                    'SAVE',
+                    'SIMPAN',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -160,13 +160,13 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
               child: TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Product Name',
+                  labelText: 'Nama Produk',
                   border: InputBorder.none,
-                  hintText: 'e.g., Fresh Milk',
+                  hintText: 'e.g., Susu Segar',
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter product name';
+                    return 'Silakan masukkan nama produk';
                   }
                   return null;
                 },
@@ -192,7 +192,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Category',
+                    'Kategori',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -209,7 +209,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     error: (error, stack) => Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        'Error loading categories: ${error.toString()}',
+                        'Error saat memuat kategori: ${error.toString()}',
                         style: const TextStyle(color: Colors.red),
                       ),
                     ),
@@ -218,7 +218,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         return const Padding(
                           padding: EdgeInsets.all(8.0),
                           child: Text(
-                            'No categories available. Please contact support.',
+                            'Tidak ada kategori tersedia. Silakan hubungi pusat bantuan.',
                             style: TextStyle(color: Colors.orange),
                           ),
                         );
@@ -264,13 +264,13 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
               child: Column(
                 children: [
                   _buildDateField(
-                    'Manufactured Date',
+                    'Tanggal Produksi',
                     _manufacturedDate,
                     () => _selectDate(context, true),
                   ),
                   const Divider(height: 24),
                   _buildDateField(
-                    'Expiry Date',
+                    'Tanggal Kadaluarsa',
                     _expiryDate,
                     () => _selectDate(context, false),
                   ),
@@ -297,7 +297,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Remind me before',
+                    'Ingatkan saya sebelum',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -314,7 +314,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                           divisions: 7,
                           label: _remindBeforeDays == 0
                               ? 'No reminder'
-                              : '$_remindBeforeDays day${_remindBeforeDays > 1 ? 's' : ''}',
+                              : '$_remindBeforeDays Hari${_remindBeforeDays > 1 ? 's' : ''}',
                           onChanged: (value) {
                             setState(() {
                               _remindBeforeDays = value.toInt();
@@ -328,7 +328,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         child: Text(
                           _remindBeforeDays == 0
                               ? 'Off'
-                              : '$_remindBeforeDays day${_remindBeforeDays > 1 ? 's' : ''}',
+                              : '$_remindBeforeDays hari${_remindBeforeDays > 1 ? 's' : ''}',
                           style: const TextStyle(fontWeight: FontWeight.w500),
                           textAlign: TextAlign.end,
                         ),

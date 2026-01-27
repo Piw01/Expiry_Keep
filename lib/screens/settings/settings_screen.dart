@@ -123,7 +123,7 @@ class SettingsScreen extends ConsumerWidget {
                   context: context,
                   icon: Icons.dark_mode_outlined,
                   title: 'Dark Mode',
-                  subtitle: 'Enable dark theme',
+                  subtitle: 'Aktifkan tema gelap',
                   value: isDarkMode,
                   onChanged: (value) {
                     ref.read(darkModeProvider.notifier).state = value;
@@ -164,7 +164,7 @@ class SettingsScreen extends ConsumerWidget {
                   context: context,
                   icon: Icons.notifications_outlined,
                   title: 'Push Notifications',
-                  subtitle: 'Get notified about expiring products',
+                  subtitle: 'Dapatkan pemberitahuan tentang produk yang akan kedaluwarsa',
                   value: true,
                   onChanged: (value) {
                     // TODO: Implement notification toggle
@@ -224,18 +224,18 @@ class SettingsScreen extends ConsumerWidget {
                 _buildTile(
                   context: context,
                   icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy Policy',
+                  title: 'Kebijakan Privasi',
                   onTap: () {
-                    // TODO: Show privacy policy
+                    _showAboutDialog(context);
                   },
                 ),
                 Divider(height: 1, color: subtitleColor.withOpacity(0.2)),
                 _buildTile(
                   context: context,
                   icon: Icons.description_outlined,
-                  title: 'Terms of Service',
+                  title: 'Ketentuan Layanan',
                   onTap: () {
-                    // TODO: Show terms
+                    _showAboutDialog(context);
                   },
                 ),
               ],
@@ -254,11 +254,11 @@ class SettingsScreen extends ConsumerWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
+                    content: const Text('Apakah Anda yakin ingin keluar?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
+                        child: const Text('Batalkan'),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
@@ -373,7 +373,7 @@ class SettingsScreen extends ConsumerWidget {
             Text('Version 1.0.0'),
             SizedBox(height: 16),
             Text(
-              'Keep track of your products and never let them expire!',
+              'Pantau produk Anda dan jangan pernah biarkan kedaluwarsa!',
               style: TextStyle(fontSize: 14),
             ),
             SizedBox(height: 16),

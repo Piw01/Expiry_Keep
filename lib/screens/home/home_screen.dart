@@ -63,7 +63,7 @@ class HomeScreen extends ConsumerWidget {
 
           return categoriesAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) => const Center(child: Text('Error loading categories')),
+            error: (error, stack) => const Center(child: Text('Error memuat kategori')),
             data: (categories) {
               final categoryMap = {
                 for (var cat in categories) cat.id: cat
@@ -114,7 +114,7 @@ class HomeScreen extends ConsumerWidget {
           ).then((_) => ref.invalidate(productsProvider));
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
+        label: const Text('Tambah Produk'),
         backgroundColor: Colors.red[400],
       ),
     );
@@ -135,14 +135,14 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'No products yet',
+            'Tidak ada produk',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: textColor.withOpacity(0.6),
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap + to add your first product',
+            'Ketuk + untuk menambahkan produk pertama Anda',
             style: TextStyle(color: subtitleColor),
           ),
         ],
@@ -222,13 +222,13 @@ class HomeScreen extends ConsumerWidget {
 
     if (product.isExpired) {
       statusColor = Colors.red;
-      statusText = 'Expired';
+      statusText = 'Kadaluwarsa';
     } else if (product.isExpiringSoon) {
       statusColor = Colors.orange;
-      statusText = '$daysLeft days left';
+      statusText = '$daysLeft hari tersisa';
     } else {
       statusColor = Colors.green;
-      statusText = '$daysLeft days left';
+      statusText = '$daysLeft hari tersisa';
     }
 
     final cardColor = Theme.of(context).cardColor;

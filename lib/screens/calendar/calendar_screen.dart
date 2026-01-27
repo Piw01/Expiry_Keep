@@ -232,7 +232,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No products expiring on\n${DateFormat('MMM dd, yyyy').format(_selectedDate)}',
+                  'Tidak ada produk yang kedaluwarsa pada\n${DateFormat('MMM dd, yyyy').format(_selectedDate)}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey[600],
@@ -250,7 +250,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Expiring on ${DateFormat('MMM dd, yyyy').format(_selectedDate)}',
+                'kedaluwarsa pada ${DateFormat('MMM dd, yyyy').format(_selectedDate)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -348,7 +348,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
               child: Text(
                 product.isExpired
-                    ? 'Expired'
+                    ? 'Kadaluwarsa'
                     : product.isExpiringSoon
                         ? 'Soon'
                         : 'Fresh',
